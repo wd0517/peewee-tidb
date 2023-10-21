@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "peewee-tidb"
+authors = [
+    {name = "wd0517", email = "me@wangdi.ink"}
+]
+description = "A peewee extension for TiDB."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["one", "two"]
+license = {text = "MIT License"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+
+]
+dependencies = ["peewee"]
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://github.com/wd0517/peewee-tidb"
+"Bug Reports" = "https://github.com/wd0517/peewee-tidb/issues"
+"Source" = "https://github.com/wd0517/peewee-tidb"
+
+[tool.setuptools]
+py-modules = ["peewee_tidb"]
+
+[tool.setuptools.dynamic]
+version = {attr = "peewee_tidb.__version__"}
