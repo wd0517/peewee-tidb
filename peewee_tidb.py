@@ -13,6 +13,7 @@ __all__ = (
     'TiDBDatabase',
     'PooledTiDBDatabase',
     'BigAutoRandomField',
+    "register_tidb_to_peewee",
 )
 
 
@@ -25,7 +26,12 @@ class BigAutoRandomField(BigAutoField):
         super(BigAutoRandomField, self).__init__(*args, **kwargs)
 
     def get_modifiers(self):
-        return [self.shard_bits, self.range]
+        db = self.model._meta.database
+        if db.server_version < (6, 5, 0):
+            # TiDB < 6.5 doesn't support define AUTO_RANDOM with range
+            return [self.shard_bits]
+        else:
+            return [self.shard_bits, self.range]
 
 
 class TiDBDatabase(MySQLDatabase):
@@ -41,7 +47,7 @@ class TiDBDatabase(MySQLDatabase):
             return tuple(int(num) for num in match_obj.groups()[0].split('.'))
 
         warnings.warn('Unable to determine TiDB version: "%s"' % version)
-        return (0, 0, 0)  # Unable to determine version!
+        return (0, 0, 0)
 
     def conflict_update(self, on_conflict, query):
         # Copy from MySQLDatabase.conflict_update.
