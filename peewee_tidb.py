@@ -2,23 +2,32 @@ import re
 import warnings
 
 from peewee import (
-    MySQLDatabase, Node, NodeList, ensure_entity, fn, CommaNodeList, Field,
-    SQL, Value, basestring, BigAutoField,
+    MySQLDatabase,
+    Node,
+    NodeList,
+    ensure_entity,
+    fn,
+    CommaNodeList,
+    Field,
+    SQL,
+    Value,
+    basestring,
+    BigAutoField,
 )
 from playhouse.pool import PooledDatabase
 from playhouse.db_url import register_database
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"
 __all__ = (
-    'TiDBDatabase',
-    'PooledTiDBDatabase',
-    'BigAutoRandomField',
+    "TiDBDatabase",
+    "PooledTiDBDatabase",
+    "BigAutoRandomField",
     "register_tidb_to_peewee",
 )
 
 
 class BigAutoRandomField(BigAutoField):
-    field_type = 'BIGAUTO_RANDOM'
+    field_type = "BIGAUTO_RANDOM"
 
     def __init__(self, shard_bits=5, range=64, *args, **kwargs):
         self.shard_bits = shard_bits
@@ -37,14 +46,14 @@ class BigAutoRandomField(BigAutoField):
 class TiDBDatabase(MySQLDatabase):
     field_types = {
         **MySQLDatabase.field_types,
-        'BIGAUTO_RANDOM': 'BIGINT AUTO_RANDOM',
+        "BIGAUTO_RANDOM": "BIGINT AUTO_RANDOM",
     }
 
     def _extract_server_version(self, version):
         version = version.lower()
-        match_obj = re.search(r'tidb-v(\d+\.\d+\.\d+)', version)
+        match_obj = re.search(r"tidb-v(\d+\.\d+\.\d+)", version)
         if match_obj is not None:
-            return tuple(int(num) for num in match_obj.groups()[0].split('.'))
+            return tuple(int(num) for num in match_obj.groups()[0].split("."))
 
         warnings.warn('Unable to determine TiDB version: "%s"' % version)
         return (0, 0, 0)
@@ -53,20 +62,24 @@ class TiDBDatabase(MySQLDatabase):
         # Copy from MySQLDatabase.conflict_update.
         # Because MySQLDatabase.conflict determines the value function by
         # mysql's version, but TiDB only supports `fn.VALUES`
-        if on_conflict._where or on_conflict._conflict_target or \
-           on_conflict._conflict_constraint:
-            raise ValueError('MySQL does not support the specification of '
-                             'where clauses or conflict targets for conflict '
-                             'resolution.')
+        if (
+            on_conflict._where
+            or on_conflict._conflict_target
+            or on_conflict._conflict_constraint
+        ):
+            raise ValueError(
+                "MySQL does not support the specification of "
+                "where clauses or conflict targets for conflict "
+                "resolution."
+            )
 
         updates = []
         if on_conflict._preserve:
             for column in on_conflict._preserve:
                 entity = ensure_entity(column)
-                expression = NodeList((
-                    ensure_entity(column),
-                    SQL('='),
-                    fn.VALUES(entity)))
+                expression = NodeList(
+                    (ensure_entity(column), SQL("="), fn.VALUES(entity))
+                )
                 updates.append(expression)
 
         if on_conflict._update:
@@ -80,23 +93,22 @@ class TiDBDatabase(MySQLDatabase):
                         v = k.to_value(v)
                     else:
                         v = Value(v, unpack=False)
-                updates.append(NodeList((ensure_entity(k), SQL('='), v)))
+                updates.append(NodeList((ensure_entity(k), SQL("="), v)))
 
         if updates:
-            return NodeList((SQL('ON DUPLICATE KEY UPDATE'),
-                             CommaNodeList(updates)))
+            return NodeList((SQL("ON DUPLICATE KEY UPDATE"), CommaNodeList(updates)))
 
 
 class PooledTiDBDatabase(PooledDatabase, TiDBDatabase):
     def _is_closed(self, conn):
         try:
             conn.ping(False)
-        except:
+        except:  # noqa: E722
             return True
         else:
             return False
 
 
 def register_tidb_to_peewee():
-    register_database(TiDBDatabase, 'tidb')
-    register_database(PooledTiDBDatabase, 'tidb+pool')
+    register_database(TiDBDatabase, "tidb")
+    register_database(PooledTiDBDatabase, "tidb+pool")
