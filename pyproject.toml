@@ -10,7 +10,7 @@ authors = [
 description = "A peewee extension for TiDB."
 readme = "README.md"
 requires-python = ">=3.7"
-keywords = ["one", "two"]
+keywords = ["peewee", "tidb"]
 license = {text = "MIT License"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
