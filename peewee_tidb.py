@@ -17,7 +17,7 @@ from peewee import (
 from playhouse.pool import PooledDatabase
 from playhouse.db_url import register_database
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = (
     "TiDBDatabase",
     "PooledTiDBDatabase",
@@ -36,8 +36,8 @@ class BigAutoRandomField(BigAutoField):
 
     def get_modifiers(self):
         db = self.model._meta.database
-        if db.server_version < (6, 5, 0):
-            # TiDB < 6.5 doesn't support define AUTO_RANDOM with range
+        if db.server_version < (6, 3, 0):
+            # TiDB < 6.3 doesn't support define AUTO_RANDOM with range
             return [self.shard_bits]
         else:
             return [self.shard_bits, self.range]
