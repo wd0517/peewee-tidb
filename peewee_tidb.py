@@ -49,6 +49,12 @@ class TiDBDatabase(MySQLDatabase):
         "BIGAUTO_RANDOM": "BIGINT AUTO_RANDOM",
     }
 
+    def _set_server_version(self, conn):
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT VERSION()")
+            version = cursor.fetchone()[0]
+        self.server_version = self._extract_server_version(version)
+
     def _extract_server_version(self, version):
         version = version.lower()
         match_obj = re.search(r"tidb-v(\d+\.\d+\.\d+)", version)
